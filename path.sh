@@ -24,6 +24,7 @@ cmdhelp() {
     echo "flags                : Displays a list of valid flags"
     echo "commands (or cmds)   : Displays a list of valid commands"
     echo "update               : Updates path to the latest version"
+    echo "changelog            : Displays the changelog for the latest version"
     echo "list                 : Lists all commands in the user's PATH"
     echo "add <file>           : Adds a file to the user's PATH"
     echo "put <file>           : Copies a file to the user's PATH"
@@ -190,6 +191,12 @@ changelog)
     fi
 
     echo "$response"
+    ;;
+
+about)
+    echo "path version $VERSION"
+    echo "A simple CLI tool to manage your PATH"
+    echo "Source code: https://github.com/sophb-ccjt/path-cli"
     ;;
 
 add)
