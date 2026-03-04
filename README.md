@@ -17,7 +17,8 @@ i'm sorry *what*
 that's it, i'm taking over from here
 # Hey, rude!
 
-**How to install**
+**How to install:**
+
 run `curl -fsSL https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/install.sh | bash`
 
 if you're paranoid, `curl -fsSL https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/install.sh -o install.sh; bash install.sh; rm -f install.sh`
