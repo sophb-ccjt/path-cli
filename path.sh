@@ -176,9 +176,50 @@ update)
 
     chmod +x "$tmp"
 
+    # Compare checksums before replacing the running script
+    local_hash=$(sha256sum "$FILE" | awk '{print $1}')
+
+    # Fetch remote script content (curl or wget) and compute remote hash and version
+    if command -v curl >/dev/null 2>&1; then
+        remote_content=$(curl -fsSL "$UPDATE_URL") || remote_content=""
+    elif command -v wget >/dev/null 2>&1; then
+        remote_content=$(wget -qO - "$UPDATE_URL") || remote_content=""
+    else
+        remote_content=""
+    fi
+
+    if [[ -n "$remote_content" ]]; then
+        remote_hash=$(printf "%s" "$remote_content" | sha256sum | awk '{print $1}')
+        remote_version=$(printf "%s" "$remote_content" | grep -m1 '^VERSION=' | sed -E "s/^VERSION=['\"]?(.*)['\"]?$/\1/")
+    else
+        remote_hash=""
+        remote_version=""
+    fi
+
+    if [[ -n "$remote_hash" && "$local_hash" == "$remote_hash" ]]; then
+        if [[ -n "$remote_version" ]]; then
+            echo "Up to date (version $VERSION)."
+        else
+            echo "Up to date."
+        fi
+    else
+        if [[ -n "$remote_version" ]]; then
+            echo "Hey friend, it seems that path is outdated. Current: $VERSION, Latest: $remote_version. Run 'path update' to fix that."
+        else
+            echo "Hey friend, it seems that path is outdated. Run 'path update' to fix that."
+        fi
+    fi
+
+    # Try to extract VERSION from the downloaded script (handles quoted or unquoted)
+    remote_version=$(grep -m1 '^VERSION=' "$tmp" | sed -E "s/^VERSION=['\"]?(.*)['\"]?$/\1/")
+
     mv -f "$tmp" "$FILE"
 
-    echo "Updated 'path' successfully."
+    if [[ -n "$remote_version" ]]; then
+        echo "Updated 'path' from $VERSION → $remote_version."
+    else
+        echo "Updated 'path' successfully."
+    fi
     ;;
 
 changelog)
