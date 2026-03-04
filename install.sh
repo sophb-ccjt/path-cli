@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
+set -e
 
 SCRIPT_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path.sh"
-mkdir -p "$HOME/.local/bin"
-curl -fsSL "$SCRIPT_URL" -o "$HOME/.local/bin/path" && chmod +x "$HOME/.local/bin/path"
-echo "path CLI installed successfully!!"
-echo "you can now use the 'path' command to manage your PATH environment variable."
+INSTALL_DIR="$HOME/.local/bin"
+INSTALL_PATH="$INSTALL_DIR/path"
+
+mkdir -p "$INSTALL_DIR"
+
+curl -fsSL "$SCRIPT_URL" -o "$INSTALL_PATH"
+chmod +x "$INSTALL_PATH"
+
+echo "path installed to $INSTALL_PATH"
+echo "Make sure $INSTALL_DIR is in your PATH."
