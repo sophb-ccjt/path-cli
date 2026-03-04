@@ -1,4 +1,4 @@
-#!/usr/bin/env/ bash
+#!/usr/bin/env bash
 
 SCRIPT_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path.sh"
 curl -fsSL "$SCRIPT_URL" -o "$HOME/.local/bin/path" && chmod +x "$HOME/.local/bin/path"
