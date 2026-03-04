@@ -1,5 +1,3 @@
-# Changelog for version 0.1.1
+# Changelog for version 0.1.2
 
-- finished update logic
-- added version number
-- added changelog command
+- make up to date msg only appear with verbose flag

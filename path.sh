@@ -5,7 +5,7 @@ BIN_DIR=$HOME/.local/bin
 FILE=$0
 UPDATE_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path.sh"
 CHANGELOG_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/CHANGELOG.md"
-VERSION=0.1.1
+VERSION=0.1.2
 
 force=0
 verbose=0
