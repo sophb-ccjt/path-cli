@@ -279,7 +279,7 @@ local_hash=$(sha256sum "$FILE" | awk '{print $1}')
 remote_hash=$(curl -fsSL "$UPDATE_URL" | sha256sum | awk '{print $1}')
 
 if [[ "$local_hash" == "$remote_hash" ]]; then
-    echo "Up to date."
+    log "Up to date."
 else
     echo "Hey friend, it seems that path is outdated. Run 'path update' to fix that."
 fi
