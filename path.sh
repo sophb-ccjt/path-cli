@@ -2,7 +2,10 @@
 set -eo pipefail
 
 BIN_DIR=$HOME/.local/bin
+FILE=$0
 UPDATE_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path.sh"
+CHANGELOG_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/CHANGELOG.md"
+VERSION=0.1.1
 
 force=0
 verbose=0
@@ -20,6 +23,7 @@ cmdhelp() {
     echo "help                 : Displays a list of valid commands and flags"
     echo "flags                : Displays a list of valid flags"
     echo "commands (or cmds)   : Displays a list of valid commands"
+    echo "update               : Updates path to the latest version"
     echo "list                 : Lists all commands in the user's PATH"
     echo "add <file>           : Adds a file to the user's PATH"
     echo "put <file>           : Copies a file to the user's PATH"
@@ -170,9 +174,22 @@ update)
 
     chmod +x "$tmp"
 
-    mv -f "$tmp" "$BIN_DIR/path"
+    mv -f "$tmp" "$FILE"
 
     echo "Updated 'path' successfully."
+    ;;
+
+changelog)
+    if command -v curl >/dev/null 2>&1; then
+        response=$(curl -s "$CHANGELOG_URL")
+    elif command -v wget >/dev/null 2>&1; then
+        response=$(wget "$CHANGELOG_URL")
+    else
+        echo "curl or wget required"
+        exit 1
+    fi
+
+    echo "$response"
     ;;
 
 add)
@@ -258,3 +275,11 @@ remove)
     ;;
 
 esac
+local_hash=$(sha256sum "$FILE" | awk '{print $1}')
+remote_hash=$(curl -fsSL "$UPDATE_URL" | sha256sum | awk '{print $1}')
+
+if [[ "$local_hash" == "$remote_hash" ]]; then
+    echo "Up to date."
+else
+    echo "Hey friend, it seems that path is outdated. Run 'path update' to fix that."
+fi
