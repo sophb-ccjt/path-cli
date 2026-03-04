@@ -193,7 +193,7 @@ update)
         remote_version=$(printf "%s" "$remote_content" | grep -m1 '^VERSION=' | sed -E "s/^VERSION=['\"]?(.*)['\"]?$/\1/")
     else
         remote_hash=""
-        remote_version=""
+        remote_vehrsion=""
     fi
 
     if [[ -n "$remote_hash" && "$local_hash" == "$remote_hash" ]]; then
