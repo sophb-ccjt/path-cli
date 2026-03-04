@@ -25,6 +25,7 @@ cmdhelp() {
     echo "commands (or cmds)   : Displays a list of valid commands"
     echo "update               : Updates path to the latest version"
     echo "changelog            : Displays the changelog for the latest version"
+    echo "about                : Displays information about path"
     echo "list                 : Lists all commands in the user's PATH"
     echo "add <file>           : Adds a file to the user's PATH"
     echo "put <file>           : Copies a file to the user's PATH"
