@@ -325,16 +325,8 @@ remove)
 
 esac
 
-
-get_sha256sum() {
-    if command -v sha256sum >/dev/null 2>&1; then
-        sha256sum "$1" | awk '{print $1}'
-    else
-        shasum -a 256 "$1" | awk '{print $1}'
-    fi
-}
-local_hash=$(get_sha256sum "$FILE" | awk '{print $1}')
-remote_hash=$(curl -fsSL "$UPDATE_URL" | get_sha256sum | awk '{print $1}')
+local_hash=$(sha256sum "$FILE" | awk '{print $1}')
+remote_hash=$(curl -fsSL "$UPDATE_URL" | sha256sum | awk '{print $1}')
 
 if [[ "$local_hash" == "$remote_hash" ]]; then
     log "Up to date."
