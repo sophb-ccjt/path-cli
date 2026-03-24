@@ -3,7 +3,7 @@ set -eo pipefail
 
 BIN_DIR=$HOME/.local/bin
 FILE=$0
-UPDATE_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path.sh"
+UPDATE_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path_linux.sh"
 CHANGELOG_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/CHANGELOG.md"
 VERSION=0.1.2
 
