@@ -25,6 +25,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 
 BIN_DIR="$HOME/.local/bin"
+CWD="$(pwd)"
 FILE="$0"
 UPDATE_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path.sh"
 CHANGELOG_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/CHANGELOG.md"
@@ -293,9 +294,9 @@ grab)
 
     is_user_bin "$src" || { echo "Refusing system binary"; exit 1; }
 
-    log "Copying $src → ./"
-    cp ${force:+-f} "$src" "./$(basename "$src")"
-    echo "Copied $src to ./ (use 'path take' to move instead of copying)"
+    log "Copying $src → $PWD"
+    cp ${force:+-f} "$src" "$PWD"
+    echo "Copied $src to $PWD (use 'path take' to move instead of copying)"
     ;;
 
 take)
@@ -310,9 +311,9 @@ take)
 
     is_user_bin "$src" || { echo "Refusing system binary"; exit 1; }
 
-    log "Moving $src → ./"
-    mv ${force:+-f} "$src" "./$(basename "$src")"
-    echo "Moved $src to ./ (use 'path grab' to copy instead of moving)"
+    log "Moving $src → $PWD"
+    mv ${force:+-f} "$src" "$PWD"
+    echo "Moved $src to $PWD (use 'path grab' to copy instead of moving)"
     ;;
 
 remove)
