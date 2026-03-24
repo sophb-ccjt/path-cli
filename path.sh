@@ -1,35 +1,11 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-# ensure ~/.local/bin exists
-mkdir -p "$HOME/.local/bin"
-
-TARGET_PATH='export PATH="$HOME/.local/bin:$PATH"'
-
-# detect shell config file (macOS defaults to zsh)
-if [ -n "$ZSH_VERSION" ] || [ "$(basename "$SHELL")" = "zsh" ]; then
-  RC_FILE="$HOME/.zshrc"
-elif [ -n "$BASH_VERSION" ]; then
-  RC_FILE="$HOME/.bashrc"
-else
-  RC_FILE="$HOME/.profile"
-fi
-
-if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
-  echo "$TARGET_PATH" >> "$RC_FILE"
-  echo "Added ~/.local/bin to PATH in $RC_FILE"
-fi
-
-# apply
-export PATH="$HOME/.local/bin:$PATH"
-
-
-BIN_DIR="$HOME/.local/bin"
-CWD="$(pwd)"
-FILE="$0"
+BIN_DIR=$HOME/.local/bin
+FILE=$0
 UPDATE_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path.sh"
 CHANGELOG_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/CHANGELOG.md"
-VERSION=0.1.3
+VERSION=0.1.2
 
 force=0
 verbose=0
@@ -294,9 +270,9 @@ grab)
 
     is_user_bin "$src" || { echo "Refusing system binary"; exit 1; }
 
-    log "Copying $src → $PWD"
-    cp ${force:+-f} "$src" "$PWD"
-    echo "Copied $src to $PWD (use 'path take' to move instead of copying)"
+    log "Copying $src → ./"
+    cp ${force:+-f} "$src" "./$(basename "$src")"
+    echo "Copied $src to ./ (use 'path take' to move instead of copying)"
     ;;
 
 take)
@@ -311,9 +287,9 @@ take)
 
     is_user_bin "$src" || { echo "Refusing system binary"; exit 1; }
 
-    log "Moving $src → $PWD"
-    mv ${force:+-f} "$src" "$PWD"
-    echo "Moved $src to $PWD (use 'path grab' to copy instead of moving)"
+    log "Moving $src → ./"
+    mv ${force:+-f} "$src" "./$(basename "$src")"
+    echo "Moved $src to ./ (use 'path grab' to copy instead of moving)"
     ;;
 
 remove)
@@ -348,18 +324,17 @@ remove)
     ;;
 
 esac
-local_hash=$(sha256sum "$FILE" | awk '{print $1}')
-sha256() {
+
+
+get_sha256sum() {
     if command -v sha256sum >/dev/null 2>&1; then
-      sha256sum
-    elif command -v shasum >/dev/null 2>&1; then
-        shasum -a 256
+        sha256sum "$1" | awk '{print $1}'
     else
-      echo "Error: no SHA-256 tool found"
-      exit 1
+        shasum -a 256 "$1" | awk '{print $1}'
     fi
 }
-remote_hash=$(curl -fsSL "$UPDATE_URL" | sha256 | awk '{print $1}')
+local_hash=$(get_sha256sum "$FILE" | awk '{print $1}')
+remote_hash=$(curl -fsSL "$UPDATE_URL" | get_sha256sum | awk '{print $1}')
 
 if [[ "$local_hash" == "$remote_hash" ]]; then
     log "Up to date."
