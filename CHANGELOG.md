@@ -1,4 +1,3 @@
-# Changelog for version 0.1.2
+# Changelog for version 0.1.3
 
-- make up to date msg only appear with verbose flag
-- add about command
+- fix macOS support
