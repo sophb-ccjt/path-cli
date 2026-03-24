@@ -25,7 +25,11 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # finally, install tool 
 echo "Installing path..."
-SCRIPT_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path.sh"
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)     SCRIPT_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path_linux.sh";;
+    *)          SCRIPT_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path_macOS.sh";;
+esac
 INSTALL_DIR="$HOME/.local/bin"
 INSTALL_PATH="$INSTALL_DIR/path"
 
