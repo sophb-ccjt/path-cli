@@ -3,7 +3,7 @@ set -eo pipefail
 
 BIN_DIR=$HOME/.local/bin
 FILE=$0
-UPDATE_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path_macOS.sh"
+UPDATE_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path.sh"
 CHANGELOG_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/CHANGELOG.md"
 VERSION=0.1.2
 
@@ -122,6 +122,30 @@ is_user_bin() {
     esac
 }
 
+hash_file() {
+    local path="$1"
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$path" | awk '{print $1}'
+    elif command -v shasum >/dev/null 2>&1; then
+        shasum -a 256 "$path" | awk '{print $1}'
+    else
+        echo "Error: sha256sum or shasum is required" >&2
+        exit 1
+    fi
+}
+
+hash_text() {
+    local text="$1"
+    if command -v sha256sum >/dev/null 2>&1; then
+        printf "%s" "$text" | sha256sum | awk '{print $1}'
+    elif command -v shasum >/dev/null 2>&1; then
+        printf "%s" "$text" | shasum -a 256 | awk '{print $1}'
+    else
+        echo "Error: sha256sum or shasum is required" >&2
+        exit 1
+    fi
+}
+
 create_lenient_stub() {
     target="$1"
 
@@ -177,7 +201,7 @@ update)
     chmod +x "$tmp"
 
     # Compare checksums before replacing the running script
-    local_hash=$(sha256sum "$FILE" | awk '{print $1}')
+    local_hash=$(hash_file "$FILE")
 
     # Fetch remote script content (curl or wget) and compute remote hash and version
     if command -v curl >/dev/null 2>&1; then
@@ -189,7 +213,7 @@ update)
     fi
 
     if [[ -n "$remote_content" ]]; then
-        remote_hash=$(printf "%s" "$remote_content" | sha256sum | awk '{print $1}')
+        remote_hash=$(hash_text "$remote_content")
         remote_version=$(printf "%s" "$remote_content" | grep -m1 '^VERSION=' | sed -E "s/^VERSION=['\"]?(.*)['\"]?$/\1/")
     else
         remote_hash=""
@@ -272,7 +296,7 @@ grab)
 
     log "Copying $src → ./"
     cp ${force:+-f} "$src" "./$(basename "$src")"
-    echo "Copied $src to ./ (use 'path take' to move instead of copying)"
+    echo "Copied $src to ./ (use 'path take' to move instead of moving)"
     ;;
 
 take)
@@ -324,3 +348,13 @@ remove)
     ;;
 
 esac
+
+local_hash=$(hash_file "$FILE")
+remote_content=$(curl -fsSL "$UPDATE_URL" 2>/dev/null || true)
+remote_hash=$(hash_text "$remote_content")
+
+if [[ "$local_hash" == "$remote_hash" ]]; then
+    log "Up to date."
+else
+    echo "Hey friend, it seems that path is outdated. Run 'path update' to fix that."
+fi
