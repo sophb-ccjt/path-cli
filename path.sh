@@ -5,7 +5,7 @@ BIN_DIR=$HOME/.local/bin
 FILE=$0
 UPDATE_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/path.sh"
 CHANGELOG_URL="https://raw.githubusercontent.com/sophb-ccjt/path-cli/main/CHANGELOG.md"
-VERSION=0.1.3
+VERSION=0.2.0
 
 force=0
 verbose=0
@@ -146,6 +146,40 @@ hash_text() {
     fi
 }
 
+# Compare two semantic versions component-by-component
+# Returns 0 if ver1 > ver2, 1 otherwise
+# e.g., version_is_newer 3.0.0 2.7.5 → 0 (true)
+#       version_is_newer 1.2.3 1.10.0 → 1 (false)
+version_is_newer() {
+    local ver1="$1" ver2="$2"
+    local -a v1_parts v2_parts
+    
+    IFS='.' read -ra v1_parts <<< "$ver1"
+    IFS='.' read -ra v2_parts <<< "$ver2"
+    
+    local max_len=${#v1_parts[@]}
+    [[ ${#v2_parts[@]} -gt $max_len ]] && max_len=${#v2_parts[@]}
+    
+    for (( i = 0; i < max_len; i++ )); do
+        local p1=${v1_parts[$i]:-0}
+        local p2=${v2_parts[$i]:-0}
+        
+        # Strip non-digits and default to 0
+        p1=${p1//[^0-9]/}
+        p2=${p2//[^0-9]/}
+        p1=${p1:-0}
+        p2=${p2:-0}
+        
+        if (( p1 > p2 )); then
+            return 0  # ver1 is newer
+        elif (( p1 < p2 )); then
+            return 1  # ver2 is newer
+        fi
+    done
+    
+    return 1  # versions are equal
+}
+
 create_lenient_stub() {
     target="$1"
 
@@ -217,25 +251,22 @@ update)
         remote_version=$(printf "%s" "$remote_content" | grep -m1 '^VERSION=' | sed -E "s/^VERSION=['\"]?(.*)['\"]?$/\1/")
     else
         remote_hash=""
-        remote_vehrsion=""
+        remote_version=""
     fi
 
-    if [[ -n "$remote_hash" && "$local_hash" == "$remote_hash" ]]; then
+    # Try to extract VERSION from the downloaded script (handles quoted or unquoted)
+    remote_version=$(grep -m1 '^VERSION=' "$tmp" | sed -E "s/^VERSION=['\"]?(.*)['\"]?$/\1/")
+
+    # Check if update is actually needed by comparing versions
+    if [[ -n "$remote_version" ]] && version_is_newer "$remote_version" "$VERSION"; then
+        echo "Hey friend, it seems that path is outdated. Current: $VERSION, Latest: $remote_version. Run 'path update' to fix that."
+    else
         if [[ -n "$remote_version" ]]; then
             echo "Up to date (version $VERSION)."
         else
             echo "Up to date."
         fi
-    else
-        if [[ -n "$remote_version" ]]; then
-            echo "Hey friend, it seems that path is outdated. Current: $VERSION, Latest: $remote_version. Run 'path update' to fix that."
-        else
-            echo "Hey friend, it seems that path is outdated. Run 'path update' to fix that."
-        fi
     fi
-
-    # Try to extract VERSION from the downloaded script (handles quoted or unquoted)
-    remote_version=$(grep -m1 '^VERSION=' "$tmp" | sed -E "s/^VERSION=['\"]?(.*)['\"]?$/\1/")
 
     mv -f "$tmp" "$FILE"
 
@@ -352,9 +383,14 @@ esac
 local_hash=$(hash_file "$FILE")
 remote_content=$(curl -fsSL "$UPDATE_URL" 2>/dev/null || true)
 remote_hash=$(hash_text "$remote_content")
+remote_version=$(printf "%s" "$remote_content" | grep -m1 '^VERSION=' | sed -E "s/^VERSION=['\"]?(.*)['\"]?$/\1/")
 
 if [[ "$local_hash" == "$remote_hash" ]]; then
     log "Up to date."
 else
-    echo "Hey friend, it seems that path is outdated. Run 'path update' to fix that."
+    if [[ -n "$remote_version" ]] && version_is_newer "$remote_version" "$VERSION"; then
+        echo "Hey friend, it seems that path is outdated. Run 'path update' to fix that."
+    else
+        log "Up to date (version $VERSION) but remote content differs."
+    fi
 fi
